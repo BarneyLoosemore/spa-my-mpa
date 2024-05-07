@@ -53,12 +53,13 @@ export class Router {
     return this.#mergeParams(tokens, params);
   }
 
-  async handle(pathname, method = "GET") {
+  async handle(req) {
+    const { method, url: pathname } = req;
     const route = this.#findRoute(method, pathname);
     if (!route) {
       throw new Error(`Route not found: ${method} ${pathname}`);
     }
     const params = this.#getParams(route.pattern, pathname);
-    return await route.handler(params);
+    return await route.handler(req.headers, params);
   }
 }

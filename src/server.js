@@ -1,10 +1,13 @@
 import http from "http";
 import fsp from "fs/promises";
 import { Readable } from "stream";
-import { Router } from "./shared/router.js";
+import { Router } from "./public/shared/router.js";
 import { ReadableStream } from "stream/web";
-import { templateArticle, templateArticleDetail } from "./lib/templates.js";
-import { header, footer, home } from "./lib/partials.js";
+import {
+  templateArticle,
+  templateArticleDetail,
+} from "./public/shared/templates.js";
+import { header, footer, home } from "./public/shared/partials.js";
 
 const router = new Router();
 
@@ -41,26 +44,47 @@ const mergePartials = async (partials) => {
   });
 };
 
-router.get(
-  "/",
-  () =>
-    new Response(header + home + footer, {
+router.get("/", async (headers) => {
+  const isPartialReq = headers["x-content-mode"] === "partial";
+  if (isPartialReq) {
+    return new Response(home, {
       headers: { "Content-Type": "text/html" },
-    })
-);
-router.get("/articles", async () => {
+    });
+  }
+  return new Response(await mergePartials([header, home, footer]), {
+    headers: { "Content-Type": "text/html" },
+  });
+});
+router.get("/articles", async (headers) => {
+  const isPartialReq = headers["x-content-mode"] === "partial";
   const articleListPromise = getArticleList();
+
+  if (isPartialReq)
+    return new Response(await articleListPromise, {
+      headers: { "Content-Type": "text/html" },
+    });
+
   const res = await mergePartials([header, articleListPromise, footer]);
   return new Response(res, {
     headers: { "Content-Type": "text/html" },
   });
 });
-router.get("/articles/:id", async ({ id }) => {
+router.get("/articles/:id", async (headers, { id }) => {
+  const isPartialReq = headers["x-content-mode"] === "partial";
   const articleDetailPromise = getArticleDetail(id);
-  const res = await mergePartials([header, articleDetailPromise, footer]);
-  return new Response(res, {
-    headers: { "Content-Type": "text/html" },
-  });
+
+  if (isPartialReq) {
+    return new Response(await articleDetailPromise, {
+      headers: { "Content-Type": "text/html" },
+    });
+  }
+
+  return new Response(
+    await mergePartials([header, articleDetailPromise, footer]),
+    {
+      headers: { "Content-Type": "text/html" },
+    }
+  );
 });
 router.get(
   "/header-partial",
@@ -98,14 +122,6 @@ for (const file of assets) {
   });
 }
 
-// TODO: refact?
-router.get("/shared/router.js", async () => {
-  const content = await fsp.readFile("src/shared/router.js");
-  return new Response(content, {
-    headers: { "Content-Type": "text/javascript" },
-  });
-});
-
 function webStreamToNodeStream(webStream) {
   const reader = webStream.getReader();
   return new Readable({
@@ -121,8 +137,7 @@ function webStreamToNodeStream(webStream) {
 }
 
 const nodeAdapter = async (req, res) => {
-  const { body, status, headers } = await router.handle(req.url, req.method);
-  console.log(Object.fromEntries(headers.entries()));
+  const { body, status, headers } = await router.handle(req);
   res.writeHead(status, Object.fromEntries(headers.entries()));
   const nodeStream = webStreamToNodeStream(body);
   nodeStream.pipe(res);
