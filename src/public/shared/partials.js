@@ -15,9 +15,13 @@ export const header = `
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="view-transition" content="same-origin" />
     <link rel="stylesheet" href="/index.css" />
     <title>MPA-cum-SPA</title>
+    <script type="module">
+      window.addEventListener('pageswap', (event) => {
+        console.log(event)
+      });
+    </script>
   </head>
   <body>
     <header>

@@ -1,7 +1,7 @@
 import http from "http";
 import fsp from "fs/promises";
 import { Readable } from "stream";
-import { Router } from "./public/shared/router.js";
+import { Router } from "./router.js";
 import { ReadableStream } from "stream/web";
 import {
   templateArticle,
@@ -14,7 +14,6 @@ const router = new Router();
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const getArticleList = async () => {
-  await wait(1000);
   const articles = JSON.parse(
     await fsp.readFile("src/data/articles.json", "utf-8")
   );
@@ -24,7 +23,6 @@ const getArticleList = async () => {
 };
 
 const getArticleDetail = async (id) => {
-  await wait(1000);
   const articles = JSON.parse(
     await fsp.readFile("src/data/articles.json", "utf-8")
   );
@@ -32,7 +30,7 @@ const getArticleDetail = async (id) => {
   return templateArticleDetail(article);
 };
 
-const mergePartials = async (partials) => {
+const mergePartials = (partials) => {
   const partialsPromises = partials.map((partial) => Promise.resolve(partial));
   return new ReadableStream({
     async start(controller) {
@@ -51,7 +49,7 @@ router.get("/", async (headers) => {
       headers: { "Content-Type": "text/html" },
     });
   }
-  return new Response(await mergePartials([header, home, footer]), {
+  return new Response(mergePartials([header, home, footer]), {
     headers: { "Content-Type": "text/html" },
   });
 });
@@ -64,8 +62,7 @@ router.get("/articles", async (headers) => {
       headers: { "Content-Type": "text/html" },
     });
 
-  const res = await mergePartials([header, articleListPromise, footer]);
-  return new Response(res, {
+  return new Response(mergePartials([header, articleListPromise, footer]), {
     headers: { "Content-Type": "text/html" },
   });
 });

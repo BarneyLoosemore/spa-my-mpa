@@ -147,6 +147,10 @@ main {
   }
 }
 
+@view-transition {
+  navigation: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition {
     display: none;
@@ -167,9 +171,7 @@ main {
 }
 
 @media (min-width: 768px) {
-  .article-list {
-    img {
-      view-transition-name: none;
-    }
+  ::view-transition-new(content) {
+    animation: slide-in 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
   }
 }
