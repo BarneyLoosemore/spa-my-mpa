@@ -70,6 +70,7 @@ select {
 
 :root {
   font-family: Arial, Helvetica, sans-serif;
+  color-scheme: light dark;
   @media (min-width: 768px) {
     --gutter: 2rem;
   }
@@ -111,6 +112,7 @@ main {
   }
   img {
     width: 100%;
+    aspect-ratio: 3 / 2;
     object-fit: cover;
     border-radius: 0.5rem;
     margin-bottom: 0.25rem;
@@ -124,8 +126,7 @@ main {
   grid-template-columns: subgrid;
   img {
     grid-column: var(--full-bleed);
-    width: 100%;
-    height: 500px;
+    aspect-ratio: 5 / 4;
     object-fit: cover;
   }
   h1,

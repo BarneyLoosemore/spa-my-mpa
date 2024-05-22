@@ -1,13 +1,16 @@
 import http from "http";
 import fsp from "fs/promises";
-import { Readable } from "stream";
-import { Router } from "./router.js";
 import { ReadableStream } from "stream/web";
+import { Readable } from "stream";
+import { Router } from "./public/shared/router.js";
 import {
+  header,
+  footer,
+  home,
   templateArticle,
   templateArticleDetail,
-} from "./public/shared/templates.js";
-import { header, footer, home } from "./public/shared/partials.js";
+} from "./templates.js";
+import { generateArticle } from "../generateArticles.js";
 
 const router = new Router();
 
@@ -18,6 +21,7 @@ const getArticleList = async () => {
     await fsp.readFile("src/data/articles.json", "utf-8")
   );
   return `<ul class="article-list">${articles
+    .sort((a, b) => new Date(b.published) - new Date(a.published))
     .map(templateArticle)
     .join("")}</ul>`;
 };
@@ -76,12 +80,9 @@ router.get("/articles/:id", async (headers, { id }) => {
     });
   }
 
-  return new Response(
-    await mergePartials([header, articleDetailPromise, footer]),
-    {
-      headers: { "Content-Type": "text/html" },
-    }
-  );
+  return new Response(mergePartials([header, articleDetailPromise, footer]), {
+    headers: { "Content-Type": "text/html" },
+  });
 });
 router.get(
   "/header-partial",
@@ -119,7 +120,7 @@ for (const file of assets) {
   });
 }
 
-function webStreamToNodeStream(webStream) {
+const webStreamToNodeStream = (webStream) => {
   const reader = webStream.getReader();
   return new Readable({
     async read() {
@@ -131,7 +132,7 @@ function webStreamToNodeStream(webStream) {
       }
     },
   });
-}
+};
 
 const nodeAdapter = async (req, res) => {
   const { body, status, headers } = await router.handle(req);
@@ -145,5 +146,23 @@ const listen = (port) => {
     .createServer(nodeAdapter)
     .listen(port, () => console.log("listening on 3000.."));
 };
+
+const scheduleArticlesUpdate = () => {
+  setInterval(async () => {
+    const articles = JSON.parse(
+      await fsp.readFile("src/data/articles.json", "utf-8")
+    );
+    const lastId = articles[articles.length - 1].id;
+    console.log({ lastId });
+    const newArticle = generateArticle(lastId + 1, new Date());
+    articles.push(newArticle);
+    await fsp.writeFile(
+      "src/data/articles.json",
+      JSON.stringify(articles, null, 2)
+    );
+  }, 30000);
+};
+
+scheduleArticlesUpdate();
 
 listen(3000);

@@ -1,4 +1,8 @@
-const mergePartials = async (responsePromises, headers) => {
+import { Router } from "./shared/router.js";
+
+const router = new Router();
+
+const mergePartials = async (responsePromises) => {
   const { readable, writable } = new TransformStream();
 
   const done = (async () => {
@@ -11,7 +15,9 @@ const mergePartials = async (responsePromises, headers) => {
   return {
     done,
     response: new Response(readable, {
-      headers: headers || (await responsePromises[0]).headers,
+      headers: {
+        "Content-Type": "text/html",
+      },
     }),
   };
 };
@@ -27,16 +33,42 @@ const populateCache = async () => {
   ]);
 };
 
+const staleWhileRevalidate = async (pathname, headers) => {
+  const cache = await caches.open(cacheName);
+  const cachedResponse = await cache.match(pathname);
+  const fetchPromise = (async () => {
+    const response = await fetch(pathname, { headers });
+    cache.put(pathname, response.clone());
+    return response;
+  })();
+  return cachedResponse || fetchPromise;
+};
+
 const cacheFirst = async (pathname, headers) => {
   const cache = await caches.open(cacheName);
   const cachedResponse = await cache.match(pathname);
   if (cachedResponse) return cachedResponse;
-
   const response = await fetch(pathname, { headers });
-  const now = performance.now();
   cache.put(pathname, response.clone());
   return response;
 };
+
+const networkFirst = async (pathname, headers) => {
+  const cache = await caches.open(cacheName);
+  try {
+    const response = await fetch(pathname, { headers });
+    cache.put(pathname, response.clone());
+    return response;
+  } catch (error) {
+    return cache.match(pathname);
+  }
+};
+
+router.get("/", async (headers) => cacheFirst("/", headers));
+router.get("/articles", async (headers) => networkFirst("/articles", headers));
+router.get("/articles/:id", async (headers, { id }) =>
+  staleWhileRevalidate(`/articles/${id}`, headers)
+);
 
 const handleNavigation = async (event) => {
   const headers = new Headers();
@@ -45,8 +77,9 @@ const handleNavigation = async (event) => {
 
   const parts = [
     cacheFirst("/header-partial"),
-    fetch(url.pathname, {
+    router.handle({
       method: "GET",
+      url: url.pathname,
       headers,
     }),
     cacheFirst("/footer-partial"),
@@ -61,7 +94,6 @@ const handleNavigation = async (event) => {
 const handleFetch = async (event) => {
   const isNavigation = event.request.mode === "navigate";
   if (isNavigation) return handleNavigation(event);
-
   return cacheFirst(event.request.url, event.request.headers);
 };
 
