@@ -16,9 +16,20 @@ export const header = `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/index.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display" rel="stylesheet">
+
+
     <title>MPA-cum-SPA</title>
     <script type="module">
       window.addEventListener('pageswap', (event) => {
+        console.log("page swap event")
+        console.log(event)
+      });
+      window.addEventListener('pagereveal', (event) => {
+        console.log("page reveal event")
         console.log(event)
       });
     </script>
@@ -39,22 +50,22 @@ export const footer = `
   <script type="speculationrules">${JSON.stringify(
     DEFAULT_SPECULATION_RULES
   )}</script>
-  <script type="module">navigator.serviceWorker.register("/sw.js", {
-    type: "module"
-  })</script>
-</html>
+  </html>
   `;
 
+// <script type="module">navigator.serviceWorker.register("/sw.js", {
+//   type: "module"
+// })</script>
 export const home = `
   <article>
-    <h1>Home</h1>
+    <h2>Home</h2>
     <a href="/articles">Articles</a>
   </article>
 `;
 
 const categoryCardClassMap = {
-  Fashion: "xl-card",
-  Science: "large-card",
+  Fashion: "large-card",
+  Technology: "xl-card",
 };
 
 export const templateArticle = (
@@ -71,11 +82,10 @@ export const templateArticle = (
   return `
     <li class="${cardClass}">
       <article>
-      <a href="/articles/${id}" class="${articleRenderPriority}">
+        <a href="/articles/${id}" class="${articleRenderPriority}">
           <img src="${image}" style="view-transition-name: image-${id}" />
-          <h1>${title}</h1>
-          <span>${standFirst}</span>
-          <p>${hoursSincePublished}h ago</p>
+          <h2>${title}<span>${hoursSincePublished}h ago</span></h2>
+          <p>${standFirst}</p>
         </a>
       </article>
     </li>
@@ -84,7 +94,7 @@ export const templateArticle = (
 
 export const templateArticleDetail = ({ id, title, image, content }) => `
  <section class="article-detail">
-    <h1>${title}</h1>
+    <h2>${title}</h2>
     <img src="${image}" style="view-transition-name: image-${id}" />
     <p style="view-transition-name: content">${content}</p>
   </section>

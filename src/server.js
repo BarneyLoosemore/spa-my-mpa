@@ -2,7 +2,7 @@ import http from "http";
 import fsp from "fs/promises";
 import { ReadableStream } from "stream/web";
 import { Readable } from "stream";
-import { Router } from "./public/shared/router.js";
+import { Router } from "./router.js";
 import {
   header,
   footer,
