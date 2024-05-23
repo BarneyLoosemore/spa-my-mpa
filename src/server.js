@@ -98,6 +98,7 @@ router.get(
       headers: { "Content-Type": "text/html" },
     })
 );
+// router.get("/articles-updated", async () => {
 
 const contentTypeMap = {
   css: "text/css",
@@ -163,6 +164,6 @@ const scheduleArticlesUpdate = () => {
   }, 30000);
 };
 
-scheduleArticlesUpdate();
+// scheduleArticlesUpdate();
 
 listen(3000);

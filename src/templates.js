@@ -52,18 +52,29 @@ export const home = `
   </article>
 `;
 
-export const templateArticle = ({ id, title, published, image }, index) => {
+const categoryCardClassMap = {
+  Fashion: "xl-card",
+  Science: "large-card",
+};
+
+export const templateArticle = (
+  { id, title, standFirst, published, category, image },
+  index
+) => {
   const articleRenderPriority =
     index === 0 ? "immediate" : index <= 5 ? "eager" : "moderate";
   const hoursSincePublished = Math.floor(
     (Date.now() - new Date(published).getTime()) / 3600000
   );
+  const cardClass = categoryCardClassMap[category] ?? "small-card";
+
   return `
-    <li>
+    <li class="${cardClass}">
       <article>
       <a href="/articles/${id}" class="${articleRenderPriority}">
           <img src="${image}" style="view-transition-name: image-${id}" />
           <h1>${title}</h1>
+          <span>${standFirst}</span>
           <p>${hoursSincePublished}h ago</p>
         </a>
       </article>
