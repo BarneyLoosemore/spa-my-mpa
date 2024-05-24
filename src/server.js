@@ -30,7 +30,7 @@ const getArticleDetail = async (id) => {
   const articles = JSON.parse(
     await fsp.readFile("src/data/articles.json", "utf-8")
   );
-  const article = articles.find((article) => article.id === parseInt(id));
+  const article = articles.find((article) => article.id === id);
   return templateArticleDetail(article);
 };
 

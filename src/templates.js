@@ -23,16 +23,7 @@ export const header = `
 
 
     <title>MPA-cum-SPA</title>
-    <script type="module">
-      window.addEventListener('pageswap', (event) => {
-        console.log("page swap event")
-        console.log(event)
-      });
-      window.addEventListener('pagereveal', (event) => {
-        console.log("page reveal event")
-        console.log(event)
-      });
-    </script>
+    <script type="module" src="/index.js"></script>
   </head>
   <body>
     <header>
@@ -50,12 +41,12 @@ export const footer = `
   <script type="speculationrules">${JSON.stringify(
     DEFAULT_SPECULATION_RULES
   )}</script>
+  <script type="module">navigator.serviceWorker.register("/sw.js", {
+    type: "module"
+  })</script>
   </html>
   `;
 
-// <script type="module">navigator.serviceWorker.register("/sw.js", {
-//   type: "module"
-// })</script>
 export const home = `
   <article>
     <h2>Home</h2>
@@ -80,10 +71,10 @@ export const templateArticle = (
   const cardClass = categoryCardClassMap[category] ?? "small-card";
 
   return `
-    <li class="${cardClass}">
+    <li class="${cardClass}" id="${id}">
       <article>
         <a href="/articles/${id}" class="${articleRenderPriority}">
-          <img src="${image}" style="view-transition-name: image-${id}" />
+          <img src="${image}" />
           <h2>${title}<span>${hoursSincePublished}h ago</span></h2>
           <p>${standFirst}</p>
         </a>
@@ -93,9 +84,9 @@ export const templateArticle = (
 };
 
 export const templateArticleDetail = ({ id, title, image, content }) => `
- <section class="article-detail">
-    <h2>${title}</h2>
-    <img src="${image}" style="view-transition-name: image-${id}" />
-    <p style="view-transition-name: content">${content}</p>
+ <section class="article-detail" id="${id}">
+    <h2 style="view-transition-name: article-title">${title}</h2>
+    <img src="${image}" style="view-transition-name: article-image" />
+    <p>${content}</p>
   </section>
 `;

@@ -78,9 +78,6 @@
     --full-bleed: 1 / -1;
     --with-gutter: 2 / 3;
     --max-content-width: 55em;
-    @media (width > 50em) {
-      --gutter: 6rem;
-    }
 
     font-family: "DM Serif Display", serif;
     font-weight: 400;
@@ -94,6 +91,9 @@
       minmax(var(--gutter), 1fr)
       minmax(0, var(--max-content-width))
       minmax(var(--gutter), 1fr);
+    @media (width > 50em) {
+      --gutter: 6rem;
+    }
     row-gap: 1rem;
     margin-block: 1rem;
   }
@@ -134,6 +134,7 @@
     gap: 2rem;
     grid-column: var(--with-gutter);
     grid-auto-flow: dense;
+    grid-template-columns: repeat(3, 1fr);
     container-type: inline-size;
     a {
       text-decoration: none;
@@ -188,16 +189,21 @@
 }
 
 @layer components {
-  @keyframes slide-in-top {
+  @keyframes slide-from-bottom {
     from {
-      transform: translateY(10%);
+      transform: translateY(35%);
+      opacity: 0;
     }
     to {
       transform: translateY(0);
+      opacity: 1;
     }
   }
-  ::view-transition-new(content) {
-    animation: slide-in-top 0.25s cubic-bezier(0.075, 0.82, 0.165, 1);
+  ::view-transition-new(article-title) {
+    animation: slide-from-bottom 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+  }
+  ::view-transition-new(article-image-reveal) {
+    animation: slide-from-bottom 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
   }
 
   .small-card {
@@ -225,7 +231,7 @@
     .small-card,
     .large-card,
     .xl-card {
-      grid-area: span 1;
+      grid-column: span 3;
       img {
         aspect-ratio: 16 / 9;
       }
