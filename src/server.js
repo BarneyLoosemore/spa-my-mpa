@@ -10,7 +10,6 @@ import {
   templateArticle,
   templateArticleDetail,
 } from "./templates.js";
-import { generateArticle } from "../generateArticles.js";
 
 const router = new Router();
 
@@ -147,23 +146,5 @@ const listen = (port) => {
     .createServer(nodeAdapter)
     .listen(port, () => console.log("listening on 3000.."));
 };
-
-const scheduleArticlesUpdate = () => {
-  setInterval(async () => {
-    const articles = JSON.parse(
-      await fsp.readFile("src/data/articles.json", "utf-8")
-    );
-    const lastId = articles[articles.length - 1].id;
-    console.log({ lastId });
-    const newArticle = generateArticle(lastId + 1, new Date());
-    articles.push(newArticle);
-    await fsp.writeFile(
-      "src/data/articles.json",
-      JSON.stringify(articles, null, 2)
-    );
-  }, 30000);
-};
-
-// scheduleArticlesUpdate();
 
 listen(3000);
